@@ -1,0 +1,218 @@
+:l Cipher
+
+"-------------------test Corps-------------------"
+(n_add :: Reel)
+--R 0.0
+inv_mult (R 0.5)
+--R 2.0
+
+"-------------------test Anneaux-------------------"
+(neutre_add :: Int)
+--0
+multiplication (3 :: Int) (4 :: Int)
+--12
+
+"-------------------test degre-----------------"
+p_ex1 = Poly [R 1, R 4, R 1]
+p_ex2 = Poly [R 2, R 1, R 7, R 2, R 0, R 1]
+
+p_ex1
+degre p_ex1
+--2
+
+p_ex2
+degre p_ex2
+--5
+
+"-------------------test addPoly-----------------"
+(show p_ex1) ++ " + " ++ (show p_ex2)
+addPoly p_ex1 p_ex2
+--Poly [R 3.0,R 5.0,R 8.0,R 2.0,R 0.0,R 1.0]
+
+"-------------------test mult_par_scalaire-----------------"
+"2.5 * "++(show p_ex1)
+mult_par_scalaire (R 2.5) p_ex1
+--Poly [R 2.5,R 10.0,R 2.5]
+
+"-------------------test oppPoly-----------------"
+oppPoly p_ex1
+-- Poly [R (-1.0),R (-4.0),R (-1.0)]
+
+"-------------------test mult_par_xn-----------------"
+(show p_ex1)++"* x puissance 3"
+mult_par_xn 3 p_ex1
+--Poly [R 0.0,R 0.0,R 0.0,R 1.0,R 4.0,R 1.0]
+
+"-------------------test multPoly-----------------"
+(show p_ex1)++" * "++(show p_ex2)
+multPoly p_ex1 p_ex2
+--Poly [R 2.0,R 9.0,R 13.0,R 31.0,R 15.0,R 3.0,R 4.0,R 1.0]
+
+"-------------------test reversePoly-----------------"
+reversePoly p_ex2
+-- Poly [R 1, R 0, R 2, R 7, R 1, R 2]
+
+"-------------------test leading -----------------"
+leading p_ex2
+-- R 1
+
+"-------------------test rem_zero-----------------"
+rem_zero (addPoly p_ex1 (Poly [R 0, R 0, R 0, R 0, R 0, R 0])) == p_ex1
+
+"-------------------test division -----------------"
+division p_ex2 p_ex1
+--(Poly [R (-57.0),R 17.0,R (-4.0),R 1.0],Poly [R 59.0,R 212.0])
+
+"-------------------test modulo-----------------"
+modulo p_ex2 p_ex1
+--Poly [R 59.0,R 212.0]
+
+"-------------------test euclide-----------------"
+euclide p_ex2 (multPoly p_ex2 p_ex1)
+--(Poly [R 2.0,R 1.0,R 7.0,R 2.0,R 0.0,R 1.0],Poly [R 1.0],Poly [])
+
+"----------------------------test hexa_bytes / bytes_hexa --------------------"
+hexa_bytes "D4"
+--Poly [Z2Z 0,Z2Z 0,Z2Z 1,Z2Z 0,Z2Z 1,Z2Z 0,Z2Z 1,Z2Z 1]
+bytes_hexa $ Poly [Z2Z 0,Z2Z 0,Z2Z 1,Z2Z 0,Z2Z 1,Z2Z 0,Z2Z 1,Z2Z 1]
+--"D4"
+
+"-------------------test modulo_mx-----------------"
+modulo_mx m_x == Poly []
+
+"-------------------test inv_modulo_mx-----------------"
+a = hexa_bytes "AB"
+modulo_mx ((inv_modulo_mx a) `multPoly` a) == Poly [Z2Z 1]
+
+"------------------------tests Byte----------------------"
+byte_nul = Poly [Z2Z 0, Z2Z 0, Z2Z 0, Z2Z 0, Z2Z 0, Z2Z 0, Z2Z 0, Z2Z 0]
+col_nul = Poly [byte_nul, byte_nul, byte_nul, byte_nul]
+
+u1 = hexa_bytes "1A"
+u2 = hexa_bytes "01" 
+u3 = hexa_bytes "25" 
+u4 = hexa_bytes "19"
+
+v1 = hexa_bytes "BA"
+v2 = hexa_bytes "12"
+v3 = hexa_bytes "8C"
+v4 = hexa_bytes "2B"
+
+p1 = Poly [u1, u2, u3, u4]
+p2 = Poly [v1, v2, v3, v4]
+
+printState $ [p1, p2 , col_nul, addPoly p1 p2] 
+--1A BA 00 A0
+--01 12 00 13
+--25 8C 00 A9
+--19 2B 00 32
+
+"------------------------------test est_nul-----------------------"
+est_nul byte_nul 
+
+"------------------------tests subBytes----------------------"
+printState $ subBytes_state key_ex
+--F1 34 62 01
+--F3 E4 68 8A
+--59 B5 59 84
+--47 24 C4 EB
+
+"------------------------test mixed_column-----------------"
+r0 = hexa_bytes "D4"  
+r1 = hexa_bytes "BF"  
+r2 = hexa_bytes "5D"  
+r3 = hexa_bytes "30"  
+
+w0 = hexa_bytes "7F"  
+w1 = hexa_bytes "02"  
+w2 = hexa_bytes "D2"  
+w3 = hexa_bytes "F1"  
+
+r = Poly [r0, r1, r2, r3]
+w = Poly [w0, w1, w2, w3]
+
+--modulo_mx $ multiplication (inv_modulo_mx (rem_zero r0)) (rem_zero r0)
+
+
+--printState [(modulo pol_red pol_red), col_nul, col_nul, col_nul]
+
+let mix e = modulo (multiplication a_x e) pol_red
+
+printState [r, (mixed_column r), col_nul, col_nul]
+
+
+"----------------------------test shiftRows----------------------"
+
+printState (shiftRows [p1, p1, p1, p2])
+--1A 1A 1A BA
+--01 01 12 01
+--25 8C 25 25
+--2B 19 19 19
+
+"-------------------------tests keyRound-------------------------"
+
+recon1 = Poly [hexa_bytes "01", hexa_bytes "00", hexa_bytes "00", hexa_bytes "00"]
+
+
+
+--q0 = rotWord w3
+--q1 = subWord q0
+--printState [w3, q0, q1, addroundkey recon1 q1] 
+
+
+printState (key_expansion key_ex 4)
+
+
+"----------------------------test recon----------------------------"
+bytes_hexa ((recon 5)`ind` 0) == "10"
+bytes_hexa ((recon 6)`ind` 0) == "20"
+bytes_hexa ((recon 10)`ind` 0) == "36"
+
+"----------------------test cipher--------------------------------------"
+in0 = Poly [hexa_bytes "32", hexa_bytes "43", hexa_bytes "F6", hexa_bytes "A8"]
+in1 = Poly [hexa_bytes "88", hexa_bytes "5A", hexa_bytes "30", hexa_bytes "8D"]
+in2 = Poly [hexa_bytes "31", hexa_bytes "31", hexa_bytes "98", hexa_bytes "A2"]
+in3 = Poly [hexa_bytes "E0", hexa_bytes "37", hexa_bytes "07", hexa_bytes "34"]
+input = [in0, in1, in2, in3]
+
+printState input
+""
+printState $ cipher input
+""
+printState (key_expansion key_ex 0)
+bytes_hexa $ invsubBytes ((hexa_bytes "63"))
+bytes_hexa $ subBytes ((hexa_bytes "53"))
+
+"-----------------------------test invShiftRows---------------------"
+
+printState [p1, p2, r, w]
+putStrLn " "
+printState (invShiftRows (shiftRows [p1, p2, r, w]))
+(invShiftRows (shiftRows [p1, p2, r, w])) == ([p1, p2, r, w])
+
+"-----------------------------test invMixedColumn--------------------"
+printState [r, mixed_column r, inv_mixed_column (mixed_column r), Poly []]
+
+k = [r, mixed_column r, inv_mixed_column (mixed_column r), Poly []]
+
+""
+printState [p1, p2, r, w]
+printState $ inv_mixed_columns $ mixed_columns [p1, p2, r, w]
+
+"----------------------------------test invsubBytes------------------------"
+
+(hexa_bytes "53") 
+invsubBytes (subBytes (hexa_bytes "53"))
+
+"----------------------------test in_cipher_round--------------------"
+ciph = cipher input
+
+ciph1 = inv_cipher_round ciph 0
+printState ciph
+""
+printState $ inv_cipher_round ciph1 1
+
+"---------------------------test inv_cipher---------------------"
+printState $ inv_cipher ciph
+
+"----------------------------Fin-------------------------------"
